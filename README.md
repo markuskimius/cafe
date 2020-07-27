@@ -1,41 +1,67 @@
-# coffee
-Buzz up your UNIX login.
+# cafe
+Organize your Unix packages
 
-## Requirements
-Bash. And some other utilities commonly available on Linux.
-
-## Installation
-Source `etc/bashrc` from your bash startup script.  E.g.,
-
-```
-$ mkdir ~/coffee
-$ cd ~/coffee
-$ git clone https://github.com/markuskimius/coffee.git
-$ echo 'source "${HOME}/coffee/coffee/etc/bashrc"' >> ~/.bashrc
-```
 
 ## What does it do?
-Installing coffee:
+Cafe lets you install a Unix package by simply untarring or git-cloning it.
+Cafe takes care of setting up the environment, such as `$PATH`, `$PYTHONPATH`,
+etc.  To uninstall, simply delete the package directory.
 
-* Provides several scripts, functions, and libraries to bash.
-* Sets the environment variable `$COFFEE` to coffee's _parent_ directory.
-* Sets other environment variables:
-  * Add `$COFFEE/*/bin` to `$PATH`
-  * Add `$COFFEE/*/lib` to `$PYTHONPATH` that contain python scripts.
-  * Add `$COFFEE/*/lib` to `$TCLLIBPATH` that contain pkgIndex.tcl.
-* Sets up vim such that:
-  * `$COFFEE/*/etc/vimrc` are automatically loaded.
-  * `$COFFEE/*` vim plugins are automatically loaded.
 
-The idea is to be able to unpack packages into `$COFFEE` to automatically set
-it up for use in your UNIX environment.  In that spirit, `etc/bashrc` also
-sources any `$COFFEE/*/etc/bashrc`.  This also means that you must be careful
-to **only unpack trusted packages in `$COFFEE`.**
+## Assumptions
+
+Cafe assumes all packages are installed under a directory defined by `$CAFE`:
+
+```bash
++-- $CAFE
+    +-- cafe
+    +-- MYPACKAGE1
+    +-- MYPACKAGE2
+    +-- MYPACKAGE3
+    +-- ...
+```
+
+Cafe also assumes the package has the following layout:
+
+```bash
++-- MYPACKAGE
+    +-- bin
+    +-- etc
+        +-- vimrc
+    +-- lib
+        +-- __init__.py
+        +-- pkgIndex.tcl
+```
+
+
+## Support
+
+Cafe currently supports these Unix tools:
+
+* bash
+* python
+* tclsh
+* vim
+
+
+## Installation
+Create a directory where you want to store your packages, git-clone cafe into
+it, then source the cafe startup script from your bashrc:
+
+```bash
+$ mkdir ~/cafe
+$ cd ~/cafe
+$ git clone https://github.com/markuskimius/cafe.git
+$ echo 'source "${HOME}/cafe/cafe/etc/bashrc"' >> ~/.bashrc
+```
+
+`$CAFE` is set by `bashrc` to the parent directory of wherever cafe is installed.
+
 
 ## License
 
 [Apache 2.0]
 
 
-[Apache 2.0]: <https://github.com/markuskimius/coffee/blob/master/LICENSE>
+[Apache 2.0]: <https://github.com/markuskimius/cafe/blob/master/LICENSE>
 

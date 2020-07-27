@@ -1,23 +1,23 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" COFFEE: Buzz up your UNIX login
-" https://github.com/markuskimius/coffee
+" CAFE: Organize your Unix packages
+" https://github.com/markuskimius/cafe
 "
 " Copyright (c)2020 Mark K. Kim
 " Released under the Apache license 2.0
-" https://github.com/markuskimius/coffee/blob/master/LICENSE
+" https://github.com/markuskimius/cafe/blob/master/LICENSE
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if !exists('__coffee_sourced')
-    let __coffee_sourced=[ expand('%:p') ]
+if !exists('__cafe_sourced')
+    let __cafe_sourced=[ expand('%:p') ]
 endif
 
-" add all packs in $COFFEE
-set packpath+=$COFFEE/coffee/share/vim
+" add all packs in $CAFE
+set packpath+=$CAFE/cafe/share/vim
 
-" source $COFFEE/*/etc/vimrc except this script
-for file in globpath($COFFEE, '*/etc/vimrc', 0, 1)
-    if index(__coffee_sourced, file) < 0
-    	let __coffee_sourced+=[ file ]
+" source $CAFE/*/etc/vimrc except this script
+for file in globpath($CAFE, '*/etc/vimrc', 0, 1)
+    if index(__cafe_sourced, file) < 0
+    	let __cafe_sourced+=[ file ]
 
     	exe 'source' file
     endif

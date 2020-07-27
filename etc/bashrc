@@ -1,26 +1,20 @@
 ##############################################################################
-# COFFEE: Buzz up your UNIX login
-# https://github.com/markuskimius/coffee
+# CAFE: Organize your Unix packages
+# https://github.com/markuskimius/cafe
 #
 # Copyright (c)2020 Mark K. Kim
 # Released under the Apache license 2.0
-# https://github.com/markuskimius/coffee/blob/master/LICENSE
+# https://github.com/markuskimius/cafe/blob/master/LICENSE
 ##############################################################################
 
-[[ -n $POSIXLY_CORRECT ]] && echo "cannot use coffee in posix mode" 1>&2 && return
+[[ -n $POSIXLY_CORRECT ]] && echo "cannot use cafe in posix mode" 1>&2 && return
 
-export COFFEE=${COFFEE-$(readlink -f "$(dirname "$(readlink -f "$BASH_SOURCE")")/../..")}
-export COFFEE_LOGDIR=${COFFEE_LOGDIR-${COFFEE}/work/log}
-export COFFEE_TOKDIR=${COFFEE_TOKDIR-${COFFEE}/work/token}
-export BASH_ENV=${COFFEE}/coffee/etc/bashrc
+export CAFE=${CAFE-$(readlink -f "$(dirname "$(readlink -f "$BASH_SOURCE")")/../..")}
+export BASH_ENV=${CAFE}/cafe/etc/bashrc
 
-function coffee::main() {
-    local file
+# Source all startup files
+for __cafe_file in "${CAFE}/cafe/etc/bashrc.d"/*; do
+    source "$__cafe_file"
+done
 
-    # Source all startup files
-    for file in "${COFFEE}/coffee/etc/bashrc.d"/*; do
-        source "$file"
-    done
-}
-
-coffee::main
+unset __cafe_file

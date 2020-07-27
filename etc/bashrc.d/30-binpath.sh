@@ -1,37 +1,19 @@
 #!/bin/bash
 
 ##############################################################################
-# COFFEE: Buzz up your UNIX login
-# https://github.com/markuskimius/coffee
+# CAFE: Organize your Unix packages
+# https://github.com/markuskimius/cafe
 #
 # Copyright (c)2020 Mark K. Kim
 # Released under the Apache license 2.0
-# https://github.com/markuskimius/coffee/blob/master/LICENSE
+# https://github.com/markuskimius/cafe/blob/master/LICENSE
 ##############################################################################
 
-function coffee::main() {
-    declare extra
-    declare p
+for __cafe_dir in "${CAFE}"/*/bin; do
+    if [[ -d "$__cafe_dir" ]] && [[ ":${PATH}:" != *":${__cafe_dir}:"* ]]; then
+        PATH="${__cafe_dir}:${PATH}"
+    fi
+done
 
-    for p in "${COFFEE}"/*/bin; do
-        if [[ -d "$p" ]] && [[ ":${extra}${extra+${PATH+:}}${PATH-}:" != *":${p}:"* ]]; then
-            extra=${extra-}${extra+:}${p}
-        fi
-    done
+unset __cafe_dir
 
-    export PATH=${extra}${extra+${PATH+:}}${PATH-}
-}
-
-coffee::main "$@"
-
-
-##############################################################################
-# TEST CODE
-
-if (( ${#BASH_SOURCE[@]} == 1 )); then
-    function main() {
-        echo "PATH=$PATH"
-    }
-
-    main "$@"
-fi

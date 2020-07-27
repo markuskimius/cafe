@@ -1,7 +1,0 @@
-[
-    {
-        "name": "localhost",
-        "method": "ssh",
-        "hostname": "localhost"
-    }
-]
