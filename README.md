@@ -27,7 +27,7 @@ Cafe also assumes the package has the following layout:
 +-- MYPACKAGE
     +-- bin
     +-- etc
-        +-- vimrc
+    |   +-- vimrc
     +-- lib
         +-- __init__.py
         +-- pkgIndex.tcl
