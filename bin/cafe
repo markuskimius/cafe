@@ -161,12 +161,12 @@ function install-json() {
             continue
         fi
 
-        install-pkg "${json}" "${name}"
+        install-jsonpkg "${json}" "${name}"
     done < <(jq -r '.[].name' "$json")
 }
 
 
-function install-pkg() {
+function install-jsonpkg() {
     local json=$1
     local name=$2
     local params=()
