@@ -1,0 +1,194 @@
+#!/bin/bash
+
+##############################################################################
+# CAFE: Organize your Unix packages
+# https://github.com/markuskimius/cafe
+#
+# Copyright (c)2020 Mark K. Kim
+# Released under the Apache license 2.0
+# https://github.com/markuskimius/cafe/blob/master/LICENSE
+##############################################################################
+
+function usage() {
+    cat <<EOF
+Cafe package manager.
+
+Usage: ${SCRIPTNAME} [OPTIONS] COMMAND [ARGUMENTS]
+
+COMMAND:
+  install-git URL [PKGNAME]
+                        Install PKGNAME by git-cloning from URL.
+
+  install-deps [PKGNAME]
+                        Install packages required by PKGNAME.  If PKGNAME is
+                        omitted, packages required by all packages are
+                        installed.
+
+OPTIONS:
+  -d,--dry-run          Dry run.  Do not actually install.
+
+EOF
+}
+
+
+##############################################################################
+# PROGRAM BEGINS HERE
+
+SCRIPTNAME=$(basename "$BASH_SOURCE")
+DRYRUN=0
+
+
+function main() {
+    local optstring
+    local isok=1
+
+    # Check dependencies
+    has-deps || exit 1
+
+    # Process options
+    optstring=$(getopt -o "hd" --long "help,dry-run" -- "$@") || isok=0
+    eval set -- "$optstring"
+
+    while (( $# )); do
+        [[ "$1" == "--" ]] && shift && break
+
+        case "$1" in
+            -h|--help)     usage && exit 0  ;;
+            -d|--dry-run)  DRYRUN=1         ;;
+        esac
+
+        shift
+    done
+
+    # Sanity check
+    (( $# == 0 )) && echo "Invalid argument count!" 1>&2 && isok=0
+
+    if (( ! isok )); then
+        echo "Type '${SCRIPTNAME} -h' for help." 1>&2
+        exit 1
+    fi
+
+    # Execute the command
+    case "$1" in
+        install-git)    shift && install-git "$@"   ;;
+        install-deps)   shift && install-deps "$@"  ;;
+        *)              echo "${1}: Invalid command" 1>&2
+                        exit 1                      ;;
+    esac
+}
+
+
+function has-deps() {
+    local isok=1
+
+    if [[ -z "$CAFE" ]]; then
+        echo "Please source etc/bashrc" 1>&2
+        isok=0
+    fi
+
+    if getopt -T &>/dev/null; (( $? != 4 )); then
+        echo "Please install enhanced getopt.  It comes with the util-linux package." 1>&2
+        isok=0
+    fi
+
+    if ! command -v jq &>/dev/null; then
+        echo "Please install 'jq'.  It's a common Unix utility for parsing JSON files." 1>&2
+        isok=0
+    fi
+
+    if ! command -v git &>/dev/null; then
+        echo "Please install 'git'" 1>&2
+        isok=0
+    fi
+
+    (( isok ))
+}
+
+
+function install-git() {
+    local url=$1
+    local name=${2-$(basename "$url" .git)}
+    local command=( git -C "$CAFE" clone "$url" "${name}" )
+
+    echo "${command[@]}"
+
+    if ! (( DRYRUN )); then
+        "${command[@]}" && install-deps "$name"
+    fi
+}
+
+
+function install-deps() {
+    local name=$1
+
+    if [[ -n "$name" ]]; then
+        install-pkgdeps "$@"
+    else
+        install-alldeps "$@"
+    fi
+}
+
+
+function install-pkgdeps() {
+    local name=$1
+    local json=${CAFE}/${name}/etc/cafe-deps.json
+
+    if [[ -e "$json" ]]; then
+        install-json "$json"
+    fi
+}
+
+
+function install-alldeps() {
+    local json
+
+    for json in "${CAFE}"/*/etc/cafe-pkgs.json; do
+        if [[ -e "${json}" ]]; then
+            echo "Found config ${json} ..."
+            install-json "${json}"
+        fi
+    done
+}
+
+
+function install-json() {
+    local json=$1
+    local name
+
+    while IFS= read -r name; do
+        if [[ -e "${CAFE}/${name}" ]]; then
+            echo "Already installed -- ${name}"
+            continue
+        fi
+
+        install-pkg "${json}" "${name}"
+    done < <(jq -r '.[].name' "$json")
+}
+
+
+function install-pkg() {
+    local json=$1
+    local name=$2
+    local params=()
+    local expected=3
+
+    # Get package details
+    while IFS= read -r line; do
+        params+=( "$line" )
+    done < <(jq -r --arg name "$name" '.[] | select(.name == $name) | .method, .url, .name' "$json")
+
+    (( ${#params[@]} < expected )) && echo "Invalid package -- $name" 1>&2 && return 1
+    (( ${#params[@]} > expected )) && echo "Too many packages with same name ($(( ${#params[@]} / expected ))) -- $name" 1>&2 && return 2
+
+    case "${params[0]}" in
+        git)  install-git "${params[@]:1}"  ;;
+        *)    echo "Unsupported install method -- ${params[0]}" 1>&2
+              return 3                      ;;
+    esac
+}
+
+
+##############################################################################
+# ENTRY POINT
+
+main "$@"
