@@ -70,6 +70,7 @@ function main() {
 
     # Execute the command
     case "$1" in
+        help)           usage && exit 0             ;;
         install-git)    shift && install-git "$@"   ;;
         install-deps)   shift && install-deps "$@"  ;;
         *)              echo "${1}: Invalid command" 1>&2
