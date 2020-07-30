@@ -21,7 +21,7 @@ Cafe assumes all packages are installed under a directory defined by `$CAFE`:
     +-- ...
 ```
 
-Cafe also assumes the package has the following layout:
+Packages are assumed to have the following layout:
 
 ```bash
 +-- MYPACKAGE
@@ -29,19 +29,17 @@ Cafe also assumes the package has the following layout:
     +-- etc
     |   +-- vimrc
     +-- lib
-        +-- __init__.py
-        +-- pkgIndex.tcl
+    |   +-- __init__.py      # for python
+    |   +-- pkgIndex.tcl     # for tcl
+    +-- man
+    +-- doc
+    +-- ftdetect             # for vim
+    +-- plugin               # for vim
+    +-- syntax               # for vim
 ```
 
-
-## Support
-
-Cafe currently supports these Unix tools:
-
-* bash
-* python
-* tclsh
-* vim
+Packages that do not have the above layout may be installed by creating a
+metpackage.
 
 
 ## Installation
@@ -56,6 +54,38 @@ $ echo 'source "${HOME}/cafe/cafe/etc/bashrc"' >> ~/.bashrc
 ```
 
 `$CAFE` is set by `bashrc` to the parent directory of wherever cafe is installed.
+
+
+## Support
+
+Cafe currently supports these Unix tools:
+
+
+### bash
+
+* `MYPACKAGE/etc/bashrc`, if exists, is sourced at bash startup.
+* `MYPACKAGE/bin` is added to `$PATH`.
+
+
+### python
+
+* `MYPACKAGE/lib` is added to `$PYTHONPATH` if it contains `__init__.py`.
+
+
+### tcl
+
+* `MYPACKAGE/lib` is added to `$TCLLIBPATH` if it contains `pkgIndex.tcl`.
+
+
+### vim (version 8+)
+
+* `MYPACKAGE/etc/vimrc`, if exists, is sourced at vim startup.
+* `MYPACKAGE/{ftdetect,plugin,syntax,doc}` are loaded or made loadable.
+
+cafe accomplishes the above by creating bash aliases `{vim,view,vimdiff,gvim}`
+that source `$CAFE/cafe/etc/vimrc` at startup.  If your vim is already aliased,
+add the `-u "$CAFE/cafe/etc/vimrc"` option to your alias to ensure the above
+are actioned.
 
 
 ## License
