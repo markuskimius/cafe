@@ -22,3 +22,16 @@ for file in globpath($CAFE, '*/etc/vimrc', 0, 1)
     	exe 'source' file
     endif
 endfor
+
+" source the user's startup script if one exists
+for file in [ $HOME . '/.vim/vimrc', $HOME . '/.vimrc' ]
+    if filereadable(file)
+        if index(__cafe_sourced, file) < 0
+        	let __cafe_sourced+=[ file ]
+
+            exe 'source ' file
+        endif
+
+        break
+    endif
+endfor
