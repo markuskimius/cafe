@@ -68,7 +68,7 @@ $ git clone https://github.com/markuskimius/cafe.git
 $ echo 'source "${HOME}/cafe/cafe/etc/bashrc"' >> ~/.bashrc
 ```
 
-`$CAFE` is set by `bashrc` to the parent directory of wherever cafe is installed.
+`$CAFE` is set by `cafe/etc/bashrc` to the parent directory of wherever cafe is installed.
 
 
 ## Usage
