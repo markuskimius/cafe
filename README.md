@@ -16,7 +16,7 @@ Packages are assumed to be installed under `$CAFE`:
 
 ```bash
 +-- $CAFE
-    +-- cafe
+    +-- cafe (this package)
     +-- MYPACKAGE1
     +-- MYPACKAGE2
     +-- MYPACKAGE3
@@ -30,7 +30,7 @@ Each package is assumed to have the following layout:
     +-- bin
     +-- etc
     |   +-- bashrc           # startup script
-    |   +-- vimrc            # vim
+    |   +-- vimrc            # vim startup script
     |   +-- cafe-deps.json   # dependencies
     +-- lib
     |   +-- __init__.py      # python package
