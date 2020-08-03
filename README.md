@@ -1,8 +1,10 @@
 # cafe
+
 Organize your Unix packages
 
 
 ## What does it do?
+
 Cafe lets you install a Unix package by simply untarring or git-cloning it.
 Cafe takes care of setting up the environment, such as `$PATH`, `$PYTHONPATH`,
 etc.  To uninstall, simply delete the package directory.
@@ -10,7 +12,7 @@ etc.  To uninstall, simply delete the package directory.
 
 ## Assumptions
 
-Cafe assumes all packages are installed under a directory defined by `$CAFE`:
+Packages are assumed to be installed under `$CAFE`:
 
 ```bash
 +-- $CAFE
@@ -21,28 +23,41 @@ Cafe assumes all packages are installed under a directory defined by `$CAFE`:
     +-- ...
 ```
 
-Packages are assumed to have the following layout:
+Each package is assumed to have the following layout:
 
 ```bash
 +-- MYPACKAGE
     +-- bin
     +-- etc
-    |   +-- vimrc
+    |   +-- bashrc           # startup script
+    |   +-- vimrc            # vim
+    |   +-- cafe-deps.json   # dependencies
     +-- lib
-    |   +-- __init__.py      # for python
-    |   +-- pkgIndex.tcl     # for tcl
+    |   +-- __init__.py      # python package
+    |   +-- pkgIndex.tcl     # tcl package
     +-- man
     +-- doc
-    +-- ftdetect             # for vim
-    +-- plugin               # for vim
-    +-- syntax               # for vim
+    +-- ftdetect             # vim package
+    +-- plugin               # vim package
+    +-- syntax               # vim package
 ```
 
 Packages that do not have the above layout may be installed by creating a
 metpackage.
 
 
+## Requirements
+
+Cafe requires:
+
+* bash
+* git
+* jq
+* enhanced getopt (in util-linux)
+
+
 ## Installation
+
 Create a directory where you want to store your packages, git-clone cafe into
 it, then source the cafe startup script from your bashrc:
 
@@ -56,10 +71,21 @@ $ echo 'source "${HOME}/cafe/cafe/etc/bashrc"' >> ~/.bashrc
 `$CAFE` is set by `bashrc` to the parent directory of wherever cafe is installed.
 
 
+## Usage
+
+Cafe comes with following commands to simplify package management:
+
+* `cafe install-git URL [PKGNAME]` - Installs `PKGNAME` from `URL` into
+  `$CAFE` using `git clone`.  Also installs any dependencies required by
+  `PKGNAME`.
+* `cafe install-deps [PKGNAME]` - Installs dependencies of `PKGNAME`.  If
+  omitted, installs the dependencies of all installed packages.
+
+
 ## Support
 
-Cafe currently supports these Unix tools:
-
+Cafe currently supports setting up the Unix environment for use with the
+following:
 
 ### bash
 
