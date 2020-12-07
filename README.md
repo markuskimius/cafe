@@ -53,7 +53,8 @@ Cafe requires:
 * bash
 * git
 * jq
-* enhanced getopt (in util-linux)
+* GNU readlink (in coreutils)
+* enhanced getopt (in getopt or util-linux)
 
 
 ## Installation

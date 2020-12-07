@@ -87,8 +87,13 @@ function has-deps() {
         isok=0
     fi
 
+    if readlink -f . &>/dev/null; (( $? != 0 )); then
+        echo "Please install GNU readlink.  It comes with the coreutils package." 1>&2
+        isok=0
+    fi
+
     if getopt -T &>/dev/null; (( $? != 4 )); then
-        echo "Please install enhanced getopt.  It comes with the util-linux package." 1>&2
+        echo "Please install enhanced getopt.  It comes with the util-linux package (Linux) or getopt package (MacPorts)." 1>&2
         isok=0
     fi
 
