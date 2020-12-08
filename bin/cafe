@@ -24,7 +24,7 @@ COMMAND:
                         omitted, packages required by all packages are
                         installed.
 
-  update-deps [PKGNAME] Update packages required by PKGNAME.  If PKGNAME is
+  update [PKGNAME]      Update packages required by PKGNAME.  If PKGNAME is
                         omitted, packages required by all packages are
                         updated.
 
@@ -40,6 +40,7 @@ EOF
 
 SCRIPTNAME=$(basename "$BASH_SOURCE")
 DRYRUN=0
+SKIP=:work:
 
 
 function main() {
@@ -74,12 +75,12 @@ function main() {
 
     # Execute the command
     case "$1" in
-        help)           usage && exit 0                   ;;
-        install-git)    shift && git-action install "$@"  ;;
-        install-deps)   shift && deps-action install "$@" ;;
-        update-deps)    shift && deps-action update  "$@" ;;
+        help)           usage && exit 0                        ;;
+        install-git)    shift && pkg-action install git "$@"   ;;
+        install-deps)   shift && deps-action install auto "$@" ;;
+        update)         shift && pkg-action update auto "$@"   ;;
         *)              echo "${1}: Invalid command" 1>&2
-                        exit 1                        ;;
+                        exit 1                                 ;;
     esac
 }
 
@@ -113,6 +114,49 @@ function has-deps() {
     fi
 
     (( isok ))
+}
+
+
+function pkg-action() {
+    local action=$1 && shift
+    local method=$1 && shift
+    local name
+
+    # name = last argument
+    for name in "$@"; do
+        :
+    done
+
+    # No package specified -- action on all installed packages
+    if (( $# == 0 )); then
+        local pkg
+
+        for pkg in "${CAFE}"/*; do
+            pkg=$(basename "$pkg")
+
+            pkg-action "$action" "$method" "$pkg"
+        done
+
+        return
+    fi
+
+    # Don't repeat the same action
+    [[ "$SKIP" == *":${name}:"* ]] && return
+    SKIP+="${name}:"
+
+    # Autodetect method if needed
+    if [[ "$method" == "auto" ]] && [[ -d "${CAFE}/${name}/.git" ]]; then
+        method=git
+    elif [[ "$method" == "auto" ]]; then
+        method=unknown
+    fi
+
+    # Action
+    case "${method}" in
+        git)  git-action "$action" "$@" ;;
+        *)    echo "Method unknown -- ${method} $@" 1>&2
+              return 3                  ;;
+    esac
 }
 
 
@@ -204,11 +248,7 @@ function jsonpkg-action() {
     (( ${#params[@]} < expected )) && echo "Invalid package -- $name" 1>&2 && return 1
     (( ${#params[@]} > expected )) && echo "Too many packages with same name ($(( ${#params[@]} / expected ))) -- $name" 1>&2 && return 2
 
-    case "${params[0]}" in
-        git)  git-action "$action" "${params[@]:1}"  ;;
-        *)    echo "Unsupported method -- ${params[0]}" 1>&2
-              return 3                      ;;
-    esac
+    pkg-action "$action" "${params[@]}"
 }
 
 
