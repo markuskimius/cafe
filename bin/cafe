@@ -24,6 +24,10 @@ COMMAND:
                         omitted, packages required by all packages are
                         installed.
 
+  update-deps [PKGNAME] Update packages required by PKGNAME.  If PKGNAME is
+                        omitted, packages required by all packages are
+                        updated.
+
 OPTIONS:
   -d,--dry-run          Dry run.  Do not actually install.
 
@@ -70,11 +74,12 @@ function main() {
 
     # Execute the command
     case "$1" in
-        help)           usage && exit 0             ;;
-        install-git)    shift && install-git "$@"   ;;
-        install-deps)   shift && install-deps "$@"  ;;
+        help)           usage && exit 0                   ;;
+        install-git)    shift && git-action install "$@"  ;;
+        install-deps)   shift && deps-action install "$@" ;;
+        update-deps)    shift && deps-action update  "$@" ;;
         *)              echo "${1}: Invalid command" 1>&2
-                        exit 1                      ;;
+                        exit 1                        ;;
     esac
 }
 
@@ -106,70 +111,83 @@ function has-deps() {
 }
 
 
-function install-git() {
-    local url=$1
-    local name=${2-$(basename "$url" .git)}
-    local command=( git -C "$CAFE" clone "$url" "${name}" )
+function git-action() {
+    local action=$1
+    local url=$2
+    local name=${3-$(basename "$url" .git)}
+    local command
+
+    case "$action" in
+        install) command=( git -C "${CAFE}" clone "$url" "${name}" ) ;;
+        update)  command=( git -C "${CAFE}/${name}" pull )           ;;
+        *)       echo "git-action: We shouldn't get here" 1>&2
+                 exit 1                                              ;;
+    esac
 
     echo "${command[@]}"
 
     if ! (( DRYRUN )); then
-        "${command[@]}" && install-deps "$name"
+        "${command[@]}" && deps-action "$action" "$name"
     fi
 }
 
 
-function install-deps() {
-    local name=$1
+function deps-action() {
+    local action=$1
+    local name=$2
 
     if [[ -n "$name" ]]; then
-        install-pkgdeps "$@"
+        pkgdeps-action "$@"
     else
-        install-alldeps "$@"
+        alldeps-action "$@"
     fi
 }
 
 
-function install-pkgdeps() {
-    local name=$1
+function pkgdeps-action() {
+    local action=$1
+    local name=$2
     local json=${CAFE}/${name}/etc/cafe-deps.json
 
     if [[ -e "$json" ]]; then
-        install-json "$json"
+        json-action "$action" "$json"
     fi
 }
 
 
-function install-alldeps() {
+function alldeps-action() {
+    local action=$1
     local json
 
     for json in "${CAFE}"/*/etc/cafe-deps.json; do
         if [[ -e "${json}" ]]; then
             echo "Found config ${json} ..."
-            install-json "${json}"
+            json-action "$action" "$json"
         fi
     done
 }
 
 
-function install-json() {
-    local json=$1
+function json-action() {
+    local action=$1
+    local json=$2
     local name
 
     while IFS= read -r name; do
-        if [[ -e "${CAFE}/${name}" ]]; then
+        if [[ "$action" == "install" && -e "${CAFE}/${name}" ]]; then
             echo "Already installed -- ${name}"
             continue
         fi
 
-        install-jsonpkg "${json}" "${name}"
+        jsonpkg-action "$action" "$json" "$name"
     done < <(jq -r '.[].name' "$json")
 }
 
 
-function install-jsonpkg() {
-    local json=$1
-    local name=$2
+function jsonpkg-action() {
+    local action=$1
+    local json=$2
+    local name=$3
     local params=()
     local expected=3
 
@@ -182,8 +200,8 @@ function install-jsonpkg() {
     (( ${#params[@]} > expected )) && echo "Too many packages with same name ($(( ${#params[@]} / expected ))) -- $name" 1>&2 && return 2
 
     case "${params[0]}" in
-        git)  install-git "${params[@]:1}"  ;;
-        *)    echo "Unsupported install method -- ${params[0]}" 1>&2
+        git)  git-action "$action" "${params[@]:1}"  ;;
+        *)    echo "Unsupported method -- ${params[0]}" 1>&2
               return 3                      ;;
     esac
 }
