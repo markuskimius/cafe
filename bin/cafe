@@ -183,7 +183,8 @@ function git-action() {
 
 function deps-action() {
     local action=$1
-    local name=$2
+    local method=$2
+    local name=$3
 
     if [[ -n "$name" ]]; then
         pkgdeps-action "$@"
@@ -195,7 +196,8 @@ function deps-action() {
 
 function pkgdeps-action() {
     local action=$1
-    local name=$2
+    local method=$2
+    local name=$3
     local json=${CAFE}/${name}/etc/cafe-deps.json
 
     if [[ -e "$json" ]]; then
@@ -206,6 +208,8 @@ function pkgdeps-action() {
 
 function alldeps-action() {
     local action=$1
+    local method=$2
+    local name=$3
     local json
 
     for json in "${CAFE}"/*/etc/cafe-deps.json; do
