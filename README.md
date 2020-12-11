@@ -78,9 +78,11 @@ Cafe comes with following commands to simplify package management:
 
 * `cafe install-git URL [PKGNAME]` - Installs `PKGNAME` from `URL` into
   `$CAFE` using `git clone`.  Also installs any dependencies required by
-  `PKGNAME`.
-* `cafe install-deps [PKGNAME]` - Installs dependencies of `PKGNAME`.  If
+  `PKGNAME` if `PKGNAME` has `etc/cafe-deps.json`.
+* `cafe install-deps [PKGNAME]` - Installs dependencies of `PKGNAME`.  If `PKGNAME` is
   omitted, installs the dependencies of all installed packages.
+* `cafe update [PKGNAME]` - Updates `PKGNAME` and its dependencies.  If `PKGNAME` is
+  omitted, updates all installed packages.
 
 
 ## Support
