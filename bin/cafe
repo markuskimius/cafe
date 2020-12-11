@@ -176,7 +176,7 @@ function git-action() {
     echo "${command[@]}"
 
     if ! (( DRYRUN )); then
-        "${command[@]}" && deps-action "$action" "$name"
+        "${command[@]}" && deps-action "$action" auto "$name"
     fi
 }
 
