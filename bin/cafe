@@ -166,6 +166,11 @@ function git-action() {
     local name=${3-$(basename "$url" .git)}
     local command
 
+    # Install instead of update if the target directory
+    if [[ "$action" == "update" ]] && ! [[ -d "${CAFE}/${name}" ]]; then
+        action=install
+    fi
+
     case "$action" in
         install) command=( git -C "${CAFE}" clone "$url" "${name}" ) ;;
         update)  command=( git -C "${CAFE}/${name}" pull )           ;;
