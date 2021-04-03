@@ -14,7 +14,7 @@ for __cafe_dir in "${CAFE}"/*/lib; do
     [[ ":${PYTHONPATH-}:" == *":${__cafe_dir}:"* ]] && continue    # Already in $PYTHONPATH
     ls "${__cafe_dir}"/*.py* &> /dev/null || continue              # No Python files in the directory
 
-    PYTHONPATH="${__cafe_dir}:${PYTHONPATH}"
+    export PYTHONPATH="${__cafe_dir}:${PYTHONPATH}"
 done
 
 unset __cafe_dir
