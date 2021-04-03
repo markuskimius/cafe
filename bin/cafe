@@ -113,6 +113,21 @@ function has-deps() {
         isok=0
     fi
 
+    if [[ ! -d "$CAFE_WORKDIR" ]] && ! mkdir -p "$CAFE_WORKDIR" 2>/dev/null; then
+        echo "Unable to create $CAFE_WORKDIR" 1>&2
+        isok=0
+    fi
+
+    if [[ ! -d "$CAFE_LOGDIR" ]] && ! mkdir -p "$CAFE_LOGDIR" 2>/dev/null; then
+        echo "Unable to create $CAFE_LOGDIR" 1>&2
+        isok=0
+    fi
+
+    if [[ ! -d "$CAFE_TOKENDIR" ]] && ! mkdir -p "$CAFE_TOKENDIR" 2>/dev/null; then
+        echo "Unable to create $CAFE_TOKENDIR" 1>&2
+        isok=0
+    fi
+
     (( isok ))
 }
 
@@ -147,13 +162,13 @@ function pkg-action() {
     # Autodetect method if needed
     if [[ "$method" == "auto" ]] && [[ -d "${CAFE}/${name}/.git" ]]; then
         method=git
-    elif [[ "$method" == "auto" ]]; then
-        method=unknown
     fi
 
     # Action
     case "${method}" in
         git)  git-action "$action" "$@" ;;
+        auto) echo "Method unknown -- $@" 1>&2
+              return 3                  ;;
         *)    echo "Method unknown -- ${method} $@" 1>&2
               return 3                  ;;
     esac
