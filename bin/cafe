@@ -40,7 +40,7 @@ EOF
 
 SCRIPTNAME=$(basename "$BASH_SOURCE")
 DRYRUN=0
-SKIP=:work:
+SKIP=
 
 
 function main() {

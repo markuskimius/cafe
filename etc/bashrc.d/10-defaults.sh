@@ -9,7 +9,7 @@
 # https://github.com/markuskimius/cafe/blob/master/LICENSE
 ##############################################################################
 
-export CAFE_WORKDIR=${CAFE_WORKDIR-$CAFE/work}
+export CAFE_WORKDIR=${CAFE_WORKDIR-$HOME/cafe-work}
 export CAFE_LOGDIR=${CAFE_LOGDIR-$CAFE_WORKDIR/log}
 export CAFE_TOKENDIR=${CAFE_TOKENDIR-$CAFE_WORKDIR/token}
 
