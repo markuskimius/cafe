@@ -21,6 +21,7 @@ INDENT = None
 def create(filepattern=None):
     cfg = CafeCfg()
     cfg.add_filter(ImportFilter())
+    cfg.add_filter(PythonFilter())
 
     if filepattern is not None:
         cfg.open(filepattern)
@@ -82,6 +83,27 @@ class CafeCfg:
 
     def __str__(self):
         return str(self.node)
+
+
+class FileOpener:
+    def open(self, filepattern):
+        merged = None
+        cwd = os.getcwd()
+
+        for filename in cafe_util.find(filepattern, subdir='etc'):
+            # chdir to the filename's directory so we can import files relative to its path
+            filename = os.path.abspath(filename)
+            dirname = os.path.dirname(filename)
+            os.chdir(dirname)
+
+            with open(filename) as f:
+                json_data = json.load(f)
+
+                merged = cafe_util.merge_json(merged, json_data)
+
+        os.chdir(cwd)
+
+        return merged
 
 
 class JsonNode:
@@ -149,25 +171,25 @@ class ImportFilter:
         return json_data
 
 
-class FileOpener:
-    def open(self, filepattern):
-        merged = None
-        cwd = os.getcwd()
+class PythonFilter:
+    def __call__(self, json_data):
+        if isinstance(json_data, dict):
+            filtered = dict()
 
-        for filename in cafe_util.find(filepattern, subdir='etc'):
-            # chdir to the filename's directory so we can import files relative to its path
-            filename = os.path.abspath(filename)
-            dirname = os.path.dirname(filename)
-            os.chdir(dirname)
+            for k,v in json_data.items():
+                if k.startswith('!'):
+                    k = k[1:]
+                    v = eval(v)
 
-            with open(filename) as f:
-                json_data = json.load(f)
+                filtered[k] = self.__call__(v)
 
-                merged = cafe_util.merge_json(merged, json_data)
+            json_data = filtered
 
-        os.chdir(cwd)
+        elif isinstance(json_data, list):
+            for i,v in enumerate(json_data):
+                json_data[i] = self.__call__(v)
 
-        return merged
+        return json_data
 
 
 ##############################################################################
