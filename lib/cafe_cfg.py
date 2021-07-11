@@ -21,6 +21,7 @@ INDENT = None
 def create(filepattern=None):
     cfg = CafeCfg()
     cfg.add_filter(ImportFilter())
+    cfg.add_filter(SelectFilter())
     cfg.add_filter(PythonFilter())
 
     if filepattern is not None:
@@ -171,13 +172,34 @@ class ImportFilter:
         return json_data
 
 
+class SelectFilter:
+    def __call__(self, json_data):
+        if isinstance(json_data, dict):
+            filtered = dict()
+
+            for k,v in json_data.items():
+                if isinstance(k,str) and k.startswith('?'):
+                    k = eval(k[1:])
+
+                if k is not None:
+                    filtered[k] = self.__call__(v)
+
+            json_data = filtered
+
+        elif isinstance(json_data, list):
+            for i,v in enumerate(json_data):
+                json_data[i] = self.__call__(v)
+
+        return json_data
+
+
 class PythonFilter:
     def __call__(self, json_data):
         if isinstance(json_data, dict):
             filtered = dict()
 
             for k,v in json_data.items():
-                if k.startswith('!'):
+                if isinstance(k,str) and k.startswith('!'):
                     k = k[1:]
                     v = eval(v)
 
