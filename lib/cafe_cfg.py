@@ -35,24 +35,14 @@ class CafeCfg:
     def __init__(self):
         self.node = JsonNode()
         self.filters = []
+        self.file_opener = FileOpener()
 
     def add_filter(self, filter):
         self.filters += [filter]
 
-    def open(self, filepattern, cwd=None):
-        cwd = os.getcwd()
-
-        for filename in cafe_util.find(filepattern, subdir='etc'):
-            # chdir to the filename's directory so we can import files relative to its path
-            filename = os.path.abspath(filename)
-            dirname = os.path.dirname(filename)
-            os.chdir(dirname)
-
-            with open(filename) as f:
-                json_data = json.load(f)
-                self.merge(json_data)
-
-        os.chdir(cwd)
+    def open(self, filepattern):
+        json_data = self.file_opener.open(filepattern)
+        self.merge(json_data)
 
         return self
 
@@ -135,12 +125,15 @@ class JsonNode:
 
 
 class ImportFilter:
+    def __init__(self):
+        self.file_opener = FileOpener()
+
     def __call__(self, json_data):
         if isinstance(json_data, dict):
             imported = None
 
             for k,v in json_data.items():
-                if k == '#import' : imported = self.open(v)
+                if k == '#import' : imported = self.file_opener.open(v)
                 else              : json_data[k] = self.__call__(v)
 
             if imported is not None:
@@ -155,6 +148,8 @@ class ImportFilter:
 
         return json_data
 
+
+class FileOpener:
     def open(self, filepattern):
         merged = None
         cwd = os.getcwd()
@@ -167,7 +162,6 @@ class ImportFilter:
 
             with open(filename) as f:
                 json_data = json.load(f)
-                json_data = self.__call__(json_data)
 
                 merged = cafe_util.merge_json(merged, json_data)
 
