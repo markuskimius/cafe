@@ -28,6 +28,21 @@ def find(filepattern, basedir='.', subdir='*'):
     return glob(filepattern, recursive=True)
 
 
+def merge_json(*json_data):
+    '''Merge multiple data from JSON.  The data may consist of values whose
+    types are valid only in a JSON.
+    '''
+    merged = None
+
+    for jd in json_data:
+        if   merged is None           : merged = jd
+        elif isinstance(merged, dict) : merged = merge_dict(merged, jd)
+        elif isinstance(merged, list) : merged = merge_list(merged, jd)
+        else                          : merged = jd
+
+    return merged
+
+
 def merge_dict(*dicts):
     '''Merge multiple dictionaries into a new dictionary.  On key collision,
     any values of type 'dict' are recursively merged, 'list' are appended, and
