@@ -7,7 +7,6 @@ import os
 import sys
 import json
 import cafe_util
-import cafe_error
 
 __copyright__ = 'Copyright 2021 Mark Kim'
 
