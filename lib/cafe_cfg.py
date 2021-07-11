@@ -85,8 +85,8 @@ class JsonNode:
 
     def merge(self, json_data):
         if   self.json is None           : self.json = json_data
-        elif isinstance(json_data, dict) : self.json = cafe_util.merge_dict(self.json, json_data)
-        elif isinstance(json_data, list) : self.json = cafe_util.merge_list(self.json, json_data)
+        elif isinstance(self.json, dict) : self.json = cafe_util.merge_dict(self.json, json_data)
+        elif isinstance(self.json, list) : self.json = cafe_util.merge_list(self.json, json_data)
         else                             : self.json = json_data
 
         if self.path:
