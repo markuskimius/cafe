@@ -204,13 +204,16 @@ class AccountFilter:
 
 
 class SelectFilter:
+    def __init__(self):
+        self.evaluator = Evaluator()
+
     def __call__(self, json_data):
         if isinstance(json_data, dict):
             filtered = dict()
 
             for k,v in json_data.items():
                 if isinstance(k,str) and k.startswith('?'):
-                    k = eval(k[1:])
+                    k = self.evaluator.eval(k[1:])
 
                 if k is not None:
                     filtered[k] = self.__call__(v)
@@ -225,6 +228,9 @@ class SelectFilter:
 
 
 class PythonFilter:
+    def __init__(self):
+        self.evaluator = Evaluator()
+
     def __call__(self, json_data):
         if isinstance(json_data, dict):
             filtered = dict()
@@ -232,7 +238,7 @@ class PythonFilter:
             for k,v in json_data.items():
                 if isinstance(k,str) and k.startswith('!'):
                     k = k[1:]
-                    v = eval(v)
+                    v = self.evaluator.eval(v)
 
                 filtered[k] = self.__call__(v)
 
@@ -243,6 +249,14 @@ class PythonFilter:
                 json_data[i] = self.__call__(v)
 
         return json_data
+
+
+class Evaluator:
+    def eval(self, expr):
+        if isinstance(expr,list):
+            expr = '\n'.join(expr)
+
+        return eval(expr, None, None)
 
 
 ##############################################################################
