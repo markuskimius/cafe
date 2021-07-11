@@ -20,14 +20,14 @@ CAFE = os.getenv('CAFE', '.')
 CAFE_WORKDIR = os.getenv('CAFE_WORKDIR', '.')
 INDENT = None
 
-def create(filepattern=None):
+def create(*args):
     cfg = CafeCfg()
     cfg.add_filter(ImportFilter())
     cfg.add_filter(AccountFilter())
     cfg.add_filter(SelectFilter())
     cfg.add_filter(PythonFilter())
 
-    if filepattern is not None:
+    for filepattern in args:
         cfg.open(filepattern)
 
     return cfg
@@ -39,6 +39,7 @@ def create(filepattern=None):
 class CafeCfg:
     def __init__(self):
         self.node = JsonNode()
+        self.depths = []
         self.filters = []
         self.file_opener = FileOpener()
 
@@ -62,13 +63,19 @@ class CafeCfg:
 
         return self
 
-    def enter(self, path):
-        self.node = self.node.enter(path)
+    def enter(self, *paths):
+        for p in paths:
+            self.node = self.node.enter(p)
+
+        self.depths += [len(paths)]
 
         return self
 
     def exit(self):
-        self.node = self.node.parent
+        for i in range(self.depths[-1]):
+            self.node = self.node.parent
+
+        self.depths = self.depths[:-1]
 
     def __enter__(self):
         return self
