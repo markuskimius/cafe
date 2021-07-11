@@ -6,6 +6,8 @@ https://github.com/markuskimius/cafe
 import os
 import sys
 import json
+import getpass
+import platform
 import cafe_util
 
 __copyright__ = 'Copyright 2021 Mark Kim'
@@ -21,6 +23,7 @@ INDENT = None
 def create(filepattern=None):
     cfg = CafeCfg()
     cfg.add_filter(ImportFilter())
+    cfg.add_filter(AccountFilter())
     cfg.add_filter(SelectFilter())
     cfg.add_filter(PythonFilter())
 
@@ -164,6 +167,34 @@ class ImportFilter:
 
                 if json_data : json_data = cafe_util.merge_dict(json_data, imported)
                 else         : json_data = imported
+
+        elif isinstance(json_data, list):
+            for i,v in enumerate(json_data):
+                json_data[i] = self.__call__(v)
+
+        return json_data
+
+
+class AccountFilter:
+    def __call__(self, json_data):
+        if isinstance(json_data, dict):
+            filtered = {}
+            matched = None
+            username = getpass.getuser()
+            hostname = platform.node()
+
+            for k,v in json_data.items():
+                if '@' in k:
+                    if k == f'{username}@{hostname}' or k == f'{username}@' or k == f'@{hostname}':
+                        matched = self.__call__(v)
+                else:
+                    filtered[k] = self.__call__(v)
+
+            if matched is None : json_data = filtered
+            elif filtered      : json_data = cafe_util.merge_dict(filtered, matched)
+            else               : json_data = matched
+
+
 
         elif isinstance(json_data, list):
             for i,v in enumerate(json_data):
