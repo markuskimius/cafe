@@ -25,7 +25,7 @@ def find(filepattern, basedir='.', subdir='*'):
     elif is_relative : filepattern = os.path.join(basedir, filepattern)
     elif CAFE        : filepattern = os.path.join(CAFE, '*', subdir, filepattern)
 
-    return glob(filepattern, recursive=True)
+    return sorted(glob(filepattern, recursive=True))
 
 
 def merge_json(*json_data):
